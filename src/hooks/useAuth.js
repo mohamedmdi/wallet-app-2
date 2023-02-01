@@ -7,7 +7,7 @@ function useAuth() {
   function logIn(user) {
     setIsAuthenticated(true);
     localStorage.setItem("isAuthenticated", true);
-    localStorage.setItem("user", JSON.stringify(user))
+    localStorage.setItem("user", JSON.stringify(user));
   }
 
   function logOut() {

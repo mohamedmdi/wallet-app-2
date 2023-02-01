@@ -26,9 +26,9 @@ export default function CreditCard({
               </div>
               <div className="pt-2">
                 <p className="font-light">Balance</p>
-                {balance !== 0 ? (
+                {balance.toString().length !== 0 ? (
                   <p className="text-xl tracking-more-wider h-5 font-semibold">
-                    {balance} {currency}
+                    {balance.toLocaleString()} {currency}
                   </p>
                 ) : (
                   <p className="text-xl tracking-more-wider h-5"></p>

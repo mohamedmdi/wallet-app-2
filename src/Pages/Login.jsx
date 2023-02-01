@@ -8,10 +8,10 @@ import CreditCard from "../components/CreditCard";
 import useAuth from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
-export default function Login({ logIn, logOut }) {
+export default function Login({ isAuthenticated, logIn }) {
   const [name, setName] = useState("");
   const [cardHolder, setCardHolder] = useState("");
-  const [email, setEmail] = useState("hh@mail.com");
+  const [email, setEmail] = useState("");
   const [currency, setCurrency] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [expiry, setExpiry] = useState({ MM: "", YY: "" });
@@ -21,8 +21,9 @@ export default function Login({ logIn, logOut }) {
   const user = JSON.parse(localStorage.getItem("user"));
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [isAuth, setIsAuth] = useState();
   useEffect(() => {
-    if ( user &&user.name !== null) {
+    if (user && user.name !== null) {
       setName(user.name);
       setCardHolder(user.cardHolder);
       setEmail(user.email);
@@ -31,6 +32,10 @@ export default function Login({ logIn, logOut }) {
       setExpiry(user.expiry);
       setBalance(user.balance);
     }
+  }, []);
+
+  useEffect(() => {
+    setIsAuth(localStorage.getItem("isAuthenticated"));
   }, []);
 
   const handleChange = (value) => {
@@ -55,7 +60,6 @@ export default function Login({ logIn, logOut }) {
     if (expiry.YY == "" || expiry.YY < currentYear) return false;
     return true;
   };
-
   const handelSubmit = () => {
     const check = checkIfEmpty();
     if (!check) {
@@ -70,7 +74,7 @@ export default function Login({ logIn, logOut }) {
             currency: currency,
             cardHolder: cardHolder,
             cardNumber: cardNumber,
-            balance: balance,
+            balance: parseFloat(balance),
             expiry: { MM: expiry.MM, YY: expiry.YY },
           },
         })
@@ -82,12 +86,24 @@ export default function Login({ logIn, logOut }) {
           currency: currency,
           cardHolder: cardHolder,
           cardNumber: cardNumber,
-          balance: balance,
+          balance: parseFloat(balance),
           expiry: { MM: expiry.MM, YY: expiry.YY },
         });
-      } else {
-        navigate("/");
+      } else if (isAuth) {
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            name: name,
+            email: email,
+            currency: currency,
+            cardHolder: cardHolder,
+            cardNumber: cardNumber,
+            balance: parseFloat(balance),
+            expiry: { MM: expiry.MM, YY: expiry.YY },
+          })
+        );
       }
+      navigate("/");
     }
   };
   return (
@@ -116,8 +132,10 @@ export default function Login({ logIn, logOut }) {
                             Name 🧑
                           </label>
                           <input
+                            placeholder="Flan Fertlan"
                             value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            onChange={(e) => e.target.value.length < 25 &&
+                              setName(e.target.value)}
                             type="text"
                             name="name"
                             id="name"
@@ -132,6 +150,7 @@ export default function Login({ logIn, logOut }) {
                             Email address 📧
                           </label>
                           <input
+                            placeholder="flan@mail.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             type="email"
@@ -193,7 +212,10 @@ export default function Login({ logIn, logOut }) {
                             <input
                               placeholder="Flan Fertelan"
                               value={cardHolder}
-                              onChange={(e) => setCardHolder(e.target.value)}
+                              onChange={(e) =>
+                                e.target.value.length < 25 &&
+                                setCardHolder(e.target.value)
+                              }
                               type="text"
                               name="cardName"
                               id="cardName"
@@ -211,11 +233,15 @@ export default function Login({ logIn, logOut }) {
                               value={cardNumber}
                               placeholder="e.g. 123456789123456"
                               onChange={(e) => {
-                                if (e.target.value.length > 16) return;
-                                setCardNumber(e.target.value);
+                                if (
+                                  e.target.value === "" ||
+                                  (!isNaN(e.target.value) &&
+                                    e.target.value.length <= 16)
+                                ) {
+                                  setCardNumber(e.target.value);
+                                }
                               }}
-                              type="number"
-                              maxLength="5"
+                              type="text"
                               name="cardNumber"
                               id="cardNumber"
                               className="font-semibold mt-1 block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"

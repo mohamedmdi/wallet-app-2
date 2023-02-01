@@ -7,14 +7,6 @@ import useAuth from "./hooks/useAuth";
 import Home from "./Pages/Home";
 import Login from "./Pages/Login";
 
-// function App() {
-//   return (
-//     <div>
-//       {false ? <LoadingComponent /> : true ? <Home /> : <Login />}
-//     </div>
-//   );
-// }
-
 const App = () => {
   const { isAuthenticated, logIn, logOut, loading } = useAuth();
   return (

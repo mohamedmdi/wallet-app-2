@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { changeLogInStatus, setUser } from "../config/Slices/mainSlice";
 import wallet from "../images/wallet-logo.png";
 import MenuItems from "../utils/MenuItems";
-import { Link, useMatch, useResolvedPath } from "react-router-dom";
+import { Link, useMatch, useNavigate, useResolvedPath } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -14,7 +14,7 @@ function classNames(...classes) {
 export default function Navbar({ logIn, logOut }) {
   const dispatch = useDispatch();
   const user = JSON.parse(localStorage.getItem("user"));
-
+  const navigate = useNavigate();
   return (
     <div>
       <Disclosure as="nav" className="bg-gray-800">
@@ -33,7 +33,7 @@ export default function Navbar({ logIn, logOut }) {
                     )}
                   </Disclosure.Button>
                 </div>
-                <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
+                <div className="flex flex-1 items-center justify-center sm:items-center sm:justify-start">
                   <div className="flex flex-shrink-0 items-center">
                     <img
                       className="block h-9 w-auto lg:hidden"
@@ -41,14 +41,23 @@ export default function Navbar({ logIn, logOut }) {
                       alt="Wallet"
                     />
                     <img
-                      className="hidden h-9 w-auto lg:block first-letter"
+                      className="hidden h-9 w-auto lg:block first-letter select-none"
                       src={wallet}
                       alt="Wallet"
                     />
+                    <div className="text-white font-mono ml-4 text-lg select-none">
+                      Wallet
+                    </div>
                   </div>
                   <div className="hidden sm:ml-6 sm:block">
-                    <div className="flex space-x-4">
-                      {MenuItems.map((item, k) => (
+                    <div className="flex space-x-1 ml-8">
+                      <h3 className="text-white text-lg font-thin">
+                        Welcome Back,{" "}
+                      </h3>
+                      <h3 className="font-semibold inline text-white text-lg ">
+                        {user.name}
+                      </h3>
+                      {/* {MenuItems.map((item, k) => (
                         // <a
                         //   key={item.name}
                         //   href={item.path}
@@ -63,7 +72,7 @@ export default function Navbar({ logIn, logOut }) {
                         //   {item.name}
                         // </a>
                         <CustomLink i={item} key={k} />
-                      ))}
+                      ))} */}
                     </div>
                   </div>
                 </div>
@@ -81,7 +90,9 @@ export default function Navbar({ logIn, logOut }) {
                     <div>
                       <Menu.Button className="flex items-center justify-center rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
                         <span className="sr-only">Open user menu</span>
-                        <span className="text-white m-2 font-semibold" >{user.name}</span>
+                        <span className="text-white m-2 font-semibold">
+                          {user.name}
+                        </span>
                         <img
                           className="h-8 w-8 rounded-full"
                           src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
@@ -129,7 +140,8 @@ export default function Navbar({ logIn, logOut }) {
                           {({ active }) => (
                             <button
                               onClick={() => {
-                                logOut()
+                                logOut();
+                                navigate("/");
                                 dispatch(
                                   setUser({
                                     user: {
@@ -162,20 +174,13 @@ export default function Navbar({ logIn, logOut }) {
 
             <Disclosure.Panel className="sm:hidden">
               <div className="space-y-1 px-2 pt-2 pb-3">
-                {MenuItems.map((item) => (
+                {MenuItems.map((item, k) => (
                   <Disclosure.Button
-                    key={item.name}
+                    key={k}
                     as="a"
-                    href={item.path}
-                    className={classNames(
-                      item.current
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-300 hover:bg-gray-700 hover:text-white",
-                      "block px-3 py-2 rounded-md text-base font-medium"
-                    )}
                     aria-current={item.current ? "page" : undefined}
                   >
-                    {item.name}
+                    <CustomLink i={item} key={k} />
                   </Disclosure.Button>
                 ))}
               </div>
@@ -186,7 +191,6 @@ export default function Navbar({ logIn, logOut }) {
     </div>
   );
 }
-
 function CustomLink({ i }) {
   const resolvedLink = useResolvedPath(i.path);
   const isActiv = useMatch({ path: resolvedLink.pathname, end: true });
@@ -196,12 +200,15 @@ function CustomLink({ i }) {
       <div
         className={classNames(
           isActiv
-            ? "bg-gray-900 text-white"
+            ? "bg-gray-700 text-white"
             : "text-gray-300 hover:bg-gray-700 hover:text-white",
-          "px-3 py-2 rounded-md text-sm font-medium"
+          "flex items-center px-3 py-2 m-1 first-letter:text-base font-normal text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
         )}
       >
-        <div className="item-text">{i.name}</div>
+        <div className="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white">
+          {i.icon}
+        </div>
+        <div className="flex-1 ml-3 whitespace-nowrap">{i.name}</div>
       </div>
     </Link>
   );

@@ -16,18 +16,24 @@ export const mainSlice = createSlice({
     expences: [
       {
         id: 1,
-        nom: "null 1",
-        value: 20,
+        nom: "Buying Mouse Buying Mouse Buying Mouse Buying Mouse Buying Mouse Buying Mouse Buying Mouse Buying Mouse Buying Mouse Buying Mouse ",
+        price: 75,
+        desc: "Description",
+        date: "2023-01-31T16:37",
       },
       {
         id: 2,
-        nom: "null 2",
-        value: 55,
+        nom: "Paying Gas",
+        price: 55,
+        desc: "Description",
+        date: "2023-01-31T16:37",
       },
       {
         id: 3,
-        nom: "null 3",
-        value: 4,
+        nom: "Week-Food",
+        price: 250,
+        desc: "Description",
+        date: "2023-01-31T16:37",
       },
     ],
   },
@@ -38,8 +44,11 @@ export const mainSlice = createSlice({
     setUser: (state, action) => {
       state.user = action.payload.user;
     },
-    addExpence: (state, action) =>{
-      state.expences = [...state.expences, action.payload]
+    addExpence: (state, action) => {
+      state.expences = [...state.expences, action.payload];
+    },
+    deleteExpence: (state, action) => {
+      state.expences = state.expences.filter((e) => e.id != action.payload);
     },
     emptyUser: (state, action) => {
       state.user = {
@@ -57,5 +66,6 @@ export const mainSlice = createSlice({
   },
 });
 
-export const { setLoading, setUser, emptyUser,addExpence } = mainSlice.actions;
+export const { setLoading, setUser, emptyUser, addExpence, deleteExpence } =
+  mainSlice.actions;
 export default mainSlice.reducer;
