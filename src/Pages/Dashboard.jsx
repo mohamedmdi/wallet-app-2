@@ -25,15 +25,25 @@ function classNames(...classes) {
 }
 export default function Dashboard() {
   const expenses = useSelector((state) => state.main.expences);
+  const incomes = useSelector((state) => state.main.incomes);
+  const transactions = [...expenses, ...incomes]
+    .sort((a, b) => {
+      let dateA = new Date(a.date);
+      let dateB = new Date(b.date);
+      return dateA - dateB;
+    })
+    .reverse();
+    console.log(transactions.reverse())
   const user = JSON.parse(localStorage.getItem("user"));
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  const labels = expenses.map((e) =>
-    e.nom.length > 20 ? e.nom.substring(0, 17) + "..." : e.nom
+  const labels = transactions.map((e) =>
+     e.date
   );
   const expencesValues = expenses.map((e) => e.price);
+  const incomesValues = incomes.map((e) => e.price);
   const data = {
     labels: labels,
     datasets: [
@@ -42,6 +52,14 @@ export default function Dashboard() {
         data: expencesValues,
         borderColor: "rgb(255, 99, 132)",
         backgroundColor: "rgba(255, 99, 132, 0.5)",
+        pointRadius: 3,
+        tension: 0.4,
+      },
+      {
+        label: "",
+        data: incomesValues,
+        borderColor: "RGB(0,112,192)",
+        backgroundColor: "RGB(0,112,192,0.5)",
         pointRadius: 3,
         tension: 0.4,
       },
@@ -121,9 +139,65 @@ export default function Dashboard() {
         <p className="font-bold text-xl my-2">This Month Expenses</p>
         <Line className="max-h-80" options={options} data={data} />
       </div>
-      <div className="flex flex-col mt-3 justify-center items-center bg-white p-7 rounded-lg shadow-md shadow-slate-300">
-        <p className="font-bold text-xl">This Month Expenses</p>
-        <div className="rounded-md mt-3"></div>
+      <div className="flex flex-col mt-3 justify-center bg-white p-7 rounded-lg shadow-md shadow-slate-300">
+        <p className="font-bold text-xl">Transaction History</p>
+        <div className="relative overflow-x-auto sm:rounded-lg mt-3">
+          <table className="w-full text-sm text-left text-gray-500 ">
+            <thead className="uppercase bg-gray-200">
+              <tr>
+                <th scope="col" className="px-6 py-3 text-gray-900 text-md">
+                  Transaction Name
+                </th>
+                <th scope="col" className="px-6 py-3 text-gray-900 text-md">
+                  Price
+                </th>
+                <th scope="col" className="px-6 py-3 text-gray-900 text-md">
+                  Statue
+                </th>
+                <th scope="col" className="px-6 py-3 text-gray-900 text-md">
+                  Date
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {transactions.map((i, k) => (
+                <tr key={k} className="border-b    hover:bg-gray-300">
+                  <th
+                    scope="row"
+                    className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap "
+                  >
+                    {i.nom.length > 20 ? i.nom.substring(0, 20) + "..." : i.nom}
+                  </th>
+                  <td className="px-6 py-4 text-gray-900">
+                    {i.price} {user.currency.value}
+                  </td>
+                  <td className="px-6 py-4 text-gray-900">
+                    <div
+                      className={classNames(
+                        i.id.charAt(0) === "i" ? "bg-green-300" : "bg-red-200",
+                        "w-min p-1.5 rounded-xl font-semibold"
+                      )}
+                    >
+                      {i.id.charAt(0) === "i" ? "Income" : "Expence"}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-gray-900">
+                    {new Date(i.date).toLocaleString(
+                      window.navigator.language,
+                      {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
