@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -10,7 +10,10 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { deleteExpence } from "../config/Slices/mainSlice";
+import ExpensesModal from "../components/Modals/ExpensesModal";
+import DeleteModal from "../components/Modals/DeleteModal";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -26,6 +29,29 @@ function classNames(...classes) {
 export default function Dashboard() {
   const expenses = useSelector((state) => state.main.expences);
   const incomes = useSelector((state) => state.main.incomes);
+  let [isOpen, setIsOpen] = useState(false);
+  let [modalContent, setModalContent] = useState({});
+  let [isDeleteOpen, setDeleteOpen] = useState(false);
+  const dispatch = useDispatch();
+  const delItem = () => {
+    dispatch(deleteExpence(modalContent.id));
+    closeModal();
+    closeDelete();
+  };
+  function closeDelete() {
+    setDeleteOpen(false);
+  }
+  function openDelete() {
+    setDeleteOpen(true);
+  }
+  function closeModal() {
+    setIsOpen(false);
+  }
+
+  function openModal(e) {
+    setModalContent({ ...e, currency: user.currency.value });
+    setIsOpen(true);
+  }
   const transactions = [...expenses, ...incomes]
     .sort((a, b) => {
       let dateA = new Date(a.date);
@@ -33,33 +59,34 @@ export default function Dashboard() {
       return dateA - dateB;
     })
     .reverse();
-    console.log(transactions.reverse())
+  let salary = 0;
+  const salaryChanges = [];
+  for (const item of transactions.slice().reverse()) {
+    if (item.id.charAt(0) === "i") {
+      salary += item.price;
+    } else {
+      salary -= item.price;
+    }
+    salaryChanges.push(salary);
+  }
+  console.log(salaryChanges);
   const user = JSON.parse(localStorage.getItem("user"));
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   const labels = transactions.map((e) =>
-     e.date
+    e.nom.length > 20 ? e.nom.substring(0, 17) + "..." : e.nom
   );
   const expencesValues = expenses.map((e) => e.price);
-  const incomesValues = incomes.map((e) => e.price);
   const data = {
-    labels: labels,
+    labels: labels.reverse(),
     datasets: [
       {
         label: "",
-        data: expencesValues,
-        borderColor: "rgb(255, 99, 132)",
-        backgroundColor: "rgba(255, 99, 132, 0.5)",
-        pointRadius: 3,
-        tension: 0.4,
-      },
-      {
-        label: "",
-        data: incomesValues,
+        data: salaryChanges,
         borderColor: "RGB(0,112,192)",
-        backgroundColor: "RGB(0,112,192,0.5)",
+        backgroundColor: "rgba(255, 99, 132, 0.5)",
         pointRadius: 3,
         tension: 0.4,
       },
@@ -92,6 +119,17 @@ export default function Dashboard() {
   console.log(user);
   return (
     <div className="p-4">
+      <ExpensesModal
+        isOpen={isOpen}
+        closeModal={closeModal}
+        modalContent={modalContent}
+        openDelete={openDelete}
+      />
+      <DeleteModal
+        isDeleteOpen={isDeleteOpen}
+        closeDelete={closeDelete}
+        delItem={delItem}
+      />
       <div className="flex flex-wrap justify-around items-start">
         <div className="w-1/4 bg-white p-4 rounded-lg shadow-md shadow-slate-300 flex flex-col">
           <h2 className="font-semibold text-md text-gray-500 mt-2">
@@ -129,14 +167,13 @@ export default function Dashboard() {
             ).toFixed(2) + "%"}
           </div>
         </div>
-
         <div className="flex flex-col justify-center items-center bg-white p-7 rounded-lg shadow-md shadow-slate-300">
           <p className="font-bold text-xl">This Month Expenses</p>
           <div className="rounded-md mt-3"></div>
         </div>
       </div>
       <div className="mt-3 p-1 flex flex-col justify-center items-center bg-white rounded-lg shadow-md shadow-slate-300">
-        <p className="font-bold text-xl my-2">This Month Expenses</p>
+        <p className="font-bold text-xl my-2">Balance Tracker</p>
         <Line className="max-h-80" options={options} data={data} />
       </div>
       <div className="flex flex-col mt-3 justify-center bg-white p-7 rounded-lg shadow-md shadow-slate-300">
@@ -161,7 +198,11 @@ export default function Dashboard() {
             </thead>
             <tbody>
               {transactions.map((i, k) => (
-                <tr key={k} className="border-b    hover:bg-gray-300">
+                <tr
+                  key={k}
+                  className="border-b hover:bg-gray-300"
+                  onClick={() => openModal(i)}
+                >
                   <th
                     scope="row"
                     className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap "
